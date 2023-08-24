@@ -3,6 +3,7 @@ const connectDB=require('./config/db.js')
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
 const userRoutes=require('./routes/userRoutes.js')
+const chatRoutes=require('./routes/chatRoutes.js')
 
 const cors=require("cors");
 const express=require('express');
@@ -18,6 +19,7 @@ app.get("/",(req,res)=>{
 })
 
 app.use("/api/user",userRoutes);
+app.use("/api/user",chatRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
