@@ -15,9 +15,7 @@ const accessChat = asyncHandler(async (req, res) => {
             { users: { $elemMatch: { $eq: req.user._id } } },
             { users: { $elemMatch: { $eq: userId } } },
         ],
-    })
-        .populate("users", "-password")
-        .populate("latestMessage");
+    }).populate("users", "-password").populate("latestMessage");
 
     isChat = await UserModel.populate(isChat, {
         path: "latestMessage.sender",
@@ -67,6 +65,93 @@ const fetchChat = asyncHandler(async (req, res) => {
     }
 });
 
+const createGroupChat = asyncHandler(async (req, res) => {
+    if (!req.body.users || !req.body.name) {
+        return res.status(400).send({ message: "Please Fill all the feilds" });
+    }
 
+    var users = JSON.parse(req.body.users);
 
-module.exports = { accessChat,fetchChat }
+    if (users.length < 2) {
+        return res.status(400).send("More than 2 users are needed to create a group chat");
+    }
+
+    users.push(req.user);
+
+    try {
+        const groupChat = await ChatModel.create({
+            chatName: req.body.name,
+            users: users,
+            isGroupChat: true,
+            groupAdmin: req.user,
+        });
+
+        const fullGroupChat = await ChatModel.findOne({ _id: groupChat._id })
+            .populate("users", "-password")
+            .populate("groupAdmin", "-password");
+
+        res.status(200).json(fullGroupChat);
+    } catch (error) {
+        res.status(400);
+        throw new Error(error.message);
+    }
+});
+
+const renameGroup = asyncHandler(async (req, res) => {
+    const { chatId, chatName } = req.body;
+
+    const updatedChat = await ChatModel.findByIdAndUpdate(chatId,{chatName},{new:true})
+        .populate("users", "-password")
+        .populate("groupAdmin", "-password");
+
+    if (!updatedChat) {
+        res.status(404);
+        throw new Error("Chat Not Found");
+    } else {
+        res.json(updatedChat);
+    }
+});
+
+const removeFromGroup = asyncHandler(async (req, res) => {
+    const { chatId, userId } = req.body;
+
+    const findChat=await ChatModel.findById(chatId);
+    if(!findChat){
+        res.status(404);
+        throw new Error("Chat Not Found");
+    }
+    if(findChat.groupAdmin !== req.user._id){
+        res.status(400);
+        throw new Error("Only group admin can remove a member");
+    }
+
+    const removed = await ChatModel.findByIdAndUpdate(chatId,{$pull: { users: userId }},{new: true})
+        .populate("users", "-password")
+        .populate("groupAdmin", "-password");
+
+    
+    res.json(removed);
+});
+
+const addToGroup = asyncHandler(async (req, res) => {
+    const { chatId, userId } = req.body;
+
+    // check if the requester is admin
+    const findChat=await ChatModel.findById(chatId);
+    if(!findChat){
+        res.status(404);
+        throw new Error("Chat Not Found");
+    }
+    if(findChat.groupAdmin !== req.user._id){
+        res.status(400);
+        throw new Error("Only group admin can add a member");
+    }
+
+    const added = await ChatModel.findByIdAndUpdate(chatId,{$push:{users:userId}},{new:true})
+        .populate("users", "-password")
+        .populate("groupAdmin", "-password");
+
+    res.json(added);
+});
+
+module.exports = { accessChat, fetchChat,createGroupChat,addToGroup,renameGroup,removeFromGroup }
