@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { ChatState } from '../../context/chatProvider';
 import {useToast, VStack, FormControl, FormLabel, Input, InputGroup, InputRightElement, Button } from '@chakra-ui/react'
 import {useHistory} from 'react-router-dom'
 
 const Login = () => {
     const [show, setShow] = useState(false);
-    const [email, setEmail] = useState();
-    const [password, setPassword] = useState();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
     const toast=useToast();
     const history=useHistory();
+    const {setUser}=ChatState();
 
     const handleSubmit = async () => {
         setLoading(true);
@@ -46,7 +48,7 @@ const Login = () => {
                 isClosable: true,
                 position: "top",
             });
-            // setUser(data);
+            setUser(data);
             localStorage.setItem("userInfo", JSON.stringify(data));
             setLoading(false);
             history.push("/chats");

@@ -1,18 +1,16 @@
 import React, { useState} from 'react'
 import axios from 'axios';
-import {useHistory} from 'react-router-dom'
 import { useToast, VStack, FormControl, FormLabel, Input, InputGroup, InputRightElement, Button } from '@chakra-ui/react'
 
 const Signup = () => {
 
     const [show, setShow] = useState(false);
-    const [name, setName] = useState();
-    const [email, setEmail] = useState();
-    const [password, setPassword] = useState();
-    const [confirmpassword, setConfirmPassword] = useState();
-    const [pic, setPic] = useState();
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmpassword, setConfirmPassword] = useState('');
+    const [pic, setPic] = useState('');
     const [loading, setLoading] = useState(false);
-    const history=useHistory();
 
     const toast = useToast();
 
@@ -95,7 +93,6 @@ const Signup = () => {
                 {name,email,password,pic},
                 config
             );
-            console.log(data);
             toast({
                 title: "Registration Successful",
                 status: "success",
@@ -103,9 +100,7 @@ const Signup = () => {
                 isClosable: true,
                 position:"top"
             });
-            localStorage.setItem("userInfo", JSON.stringify(data));
             setLoading(false);
-            history.push("/chats");
         } catch (error) {
             toast({
                 title: "Error Occured!",

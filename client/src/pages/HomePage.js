@@ -1,9 +1,19 @@
-import React from 'react'
-import { Container, Text, Flex,Tabs,Tab,TabPanels,TabPanel,TabList } from "@chakra-ui/react";
+import React,{useEffect} from 'react'
+import {useHistory} from 'react-router-dom';
+import { Container, Text, Flex, Tabs, Tab, TabPanels, TabPanel, TabList } from "@chakra-ui/react";
 import Login from '../components/authentication/Login';
 import Signup from '../components/authentication/Signup';
 
 const HomePage = () => {
+
+  const history = useHistory();
+
+  useEffect(() => {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    if (userInfo) {
+      history.push('/chats');
+    }
+  }, [history])
 
   return (
     <Container maxW='xl' centerContent>
@@ -28,10 +38,10 @@ const HomePage = () => {
           </TabList>
           <TabPanels>
             <TabPanel>
-              <Login/>
+              <Login />
             </TabPanel>
             <TabPanel>
-              <Signup/>
+              <Signup />
             </TabPanel>
           </TabPanels>
         </Tabs>

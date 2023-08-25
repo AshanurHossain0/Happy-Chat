@@ -14,7 +14,9 @@ const register = asyncHandler(async (req, res) => {
         res.status(400);
         throw new Error("User already exists")
     }
-    const user = await UserModel.create({ name, email, password, pic });
+    const userData={name,email,password}
+    if(pic) userData.pic=pic;
+    const user = await UserModel.create(userData);
     if (user) {
         const token = generateToken(user._id);
         res.status(201).json({ _id: user._id, name: user.name, email: user.email, pic: user.pic, token })
