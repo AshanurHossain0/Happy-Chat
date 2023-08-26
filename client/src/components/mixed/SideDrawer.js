@@ -5,7 +5,7 @@ import { ChatState } from '../../context/chatProvider';
 import { useDisclosure } from '@chakra-ui/hooks';
 import {
     Box, Tooltip, Button, Text, Menu, MenuButton, MenuList, Avatar, MenuItem, MenuDivider,
-    Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerBody, Input,useToast
+    Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerBody, Input,useToast,Spinner
 } from "@chakra-ui/react"
 import { Search2Icon, BellIcon, ChevronDownIcon, CloseIcon } from '@chakra-ui/icons'
 
@@ -28,7 +28,7 @@ const SideDrawer = () => {
     const [loading, setLoading] = useState(false);
     const [loadingChat, setLoadingChat] = useState(false);
 
-    const { user,setSelectedChat } = ChatState();
+    const { user,setSelectedChat,chats,setChats } = ChatState();
 
     const toast=useToast();
     const handleSearch = async () => {
@@ -76,6 +76,7 @@ const SideDrawer = () => {
                 }
             }
             const {data}=await axios.post(`${process.env.REACT_APP_BASEURL}/api/chat`,{userId},config);
+            if(!chats.find(chat=>chat._id === data._id)) setChats([data,...chats])
             setSelectedChat(data);
             setLoadingChat(false);
             onClose();
@@ -165,6 +166,7 @@ const SideDrawer = () => {
                                 ))
                             )
                         }
+                        {loadingChat && <Spinner ml='auto' display='flex' />}
                     </DrawerBody>
                 </DrawerContent>
             </Drawer>
