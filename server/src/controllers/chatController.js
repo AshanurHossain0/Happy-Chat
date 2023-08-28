@@ -121,7 +121,7 @@ const removeFromGroup = asyncHandler(async (req, res) => {
         res.status(404);
         throw new Error("Chat Not Found");
     }
-    if(findChat.groupAdmin !== req.user._id){
+    if(findChat.groupAdmin.toString() !== req.user._id.toString()){
         res.status(400);
         throw new Error("Only group admin can remove a member");
     }
@@ -143,7 +143,7 @@ const addToGroup = asyncHandler(async (req, res) => {
         res.status(404);
         throw new Error("Chat Not Found");
     }
-    if(findChat.groupAdmin !== req.user._id){
+    if(findChat.groupAdmin.toString() !== req.user._id.toString()){
         res.status(400);
         throw new Error("Only group admin can add a member");
     }
