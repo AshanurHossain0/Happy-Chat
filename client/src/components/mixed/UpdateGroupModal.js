@@ -10,7 +10,7 @@ import { ChatState } from '../../context/chatProvider'
 import UserBadge from '../userAvatar/UserBadge'
 import UserList from '../userAvatar/UserList'
 
-const UpdateGroupModal = ({ fetchAgain, setFetchAgain }) => {
+const UpdateGroupModal = ({ fetchAgain, setFetchAgain, fetchMessages }) => {
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -101,6 +101,7 @@ const UpdateGroupModal = ({ fetchAgain, setFetchAgain }) => {
       }, config);
       userToRemove._id===user._id?setSelectedChat():setSelectedChat(data);
       setFetchAgain(!fetchAgain);
+      fetchMessages();
       setLoading(false);
     }
     catch (err) {

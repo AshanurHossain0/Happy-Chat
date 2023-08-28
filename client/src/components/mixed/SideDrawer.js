@@ -111,12 +111,12 @@ const SideDrawer = () => {
                     </Button>
                 </Tooltip>
 
-                <Text fontSize='2xl' fontFamily='work sans' >Happy-To-Chat</Text>
+                <Text fontSize={{base:"xl",md:"2xl"}} fontFamily='work sans' >Happy-To-Chat</Text>
 
                 <div>
                     <Menu>
                         <MenuButton p='1'>
-                            <BellIcon fontSize='2xl' margin='1' />
+                            <BellIcon fontSize={{base:'xl',md:'2xl'}} margin='1' />
                         </MenuButton>
                         {/* <MenuList></MenuList> */}
                     </Menu>
