@@ -5,6 +5,9 @@ import React from 'react'
 const UserBadge = ({user,handleFunc}) => {
   return (
     <Box
+        display='flex'
+        justifyContent='space-between'
+        alignItems='center'
         px='2'
         py='1'
         borderRadius='lg'
@@ -18,7 +21,7 @@ const UserBadge = ({user,handleFunc}) => {
         onClick={handleFunc}
     >
         {user.name}
-        <CloseIcon boxSize='16px' pl='2'/>
+        <CloseIcon boxSize='10px' ml='2'/>
     </Box>
   )
 }

@@ -10,7 +10,7 @@ import { AddIcon } from '@chakra-ui/icons';
 const MyChats = ({fetchAgain}) => {
 
   const toast = useToast();
-  const [loggedUser, setLoggedUser] = useState();
+  const [loggedUser, setLoggedUser] = useState('');
   const { user, selectedChat, setSelectedChat, chats, setChats } = ChatState();
 
   const fetchChats = async () => {
@@ -39,7 +39,7 @@ const MyChats = ({fetchAgain}) => {
   useEffect(() => {
     setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
     fetchChats();
-  }, [])
+  }, [fetchAgain])
 
   return (
     <Box
@@ -94,7 +94,7 @@ const MyChats = ({fetchAgain}) => {
                   >
                     <Text>
                       {
-                        !chat.isGroupChat
+                        (!chat.isGroupChat && loggedUser)
                           ? getSenderName(loggedUser, chat.users)
                           : chat.chatName
                       }

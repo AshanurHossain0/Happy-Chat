@@ -1,5 +1,6 @@
 import React from 'react'
 import {ChatState} from "../context/chatProvider"
+import SingleChat from './SingleChat'
 import {Box} from '@chakra-ui/react'
 
 const ChatBox = ({fetchAgain,setFetchAgain}) => {
@@ -17,7 +18,7 @@ const ChatBox = ({fetchAgain,setFetchAgain}) => {
       borderRadius='lg'
       borderWidth='1px'
     >
-      Single
+      <SingleChat fetchAgain={fetchAgain} setFetchAgain={setFetchAgain} />
     </Box>
   )
 }
