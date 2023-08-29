@@ -92,7 +92,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         socket=io(ENDPOINT);
         socket.emit('setup',user);
         socket.on("connected",()=>setSocketConnected(true));
-        socket.on('typing',()=>setIsTyping(true));
+        socket.on('typing',(userData)=>{
+            if(userData._id !== user._id) setIsTyping(true);
+        });
         socket.on('stop_typing',()=>setIsTyping(false));
     },[])
 
@@ -101,7 +103,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         if(!socketConnected) return;
         if(!typing){
             setTyping(true);
-            socket.emit('typing',selectedChat._id);
+            socket.emit('typing',selectedChat._id,user);
         }
         let lastTypingTime=new Date().getTime();
         var timerLength=3000;
