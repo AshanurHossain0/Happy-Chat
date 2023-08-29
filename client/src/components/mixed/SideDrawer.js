@@ -5,13 +5,14 @@ import { ChatState } from '../../context/chatProvider';
 import { useDisclosure } from '@chakra-ui/hooks';
 import {
     Box, Tooltip, Button, Text, Menu, MenuButton, MenuList, Avatar, MenuItem, MenuDivider,
-    Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerBody, Input,useToast,Spinner
+    Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerBody, Input, useToast, Spinner, Icon
 } from "@chakra-ui/react"
 import { Search2Icon, BellIcon, ChevronDownIcon, CloseIcon } from '@chakra-ui/icons'
 
 import ProfileModal from './ProfileModal';
 import ChatLoading from '../ChatLoading';
 import UserList from '../userAvatar/UserList';
+import { getSenderName } from '../../config/chatLogic';
 
 const SideDrawer = () => {
 
@@ -28,67 +29,67 @@ const SideDrawer = () => {
     const [loading, setLoading] = useState(false);
     const [loadingChat, setLoadingChat] = useState(false);
 
-    const { user,setSelectedChat,chats,setChats } = ChatState();
+    const { user, setSelectedChat, chats, setChats, notification, setNotification } = ChatState();
 
-    const toast=useToast();
+    const toast = useToast();
     const handleSearch = async () => {
-        if(!search){
+        if (!search) {
             toast({
-                title:"Write something to search",
-                status:"warning",
-                isClosable:true,
-                duration:4000,
-                position:'top-left' 
+                title: "Write something to search",
+                status: "warning",
+                isClosable: true,
+                duration: 4000,
+                position: 'top-left'
             })
             return;
         }
 
-        try{
+        try {
             setLoading(true);
-            const config={
-                headers:{
+            const config = {
+                headers: {
                     "Content-Type": "application/json",
                     "x-auth-token": user.token
                 }
             }
-            const {data}=await axios.get(`${process.env.REACT_APP_BASEURL}/api/user?search=${search}`,config)
+            const { data } = await axios.get(`${process.env.REACT_APP_BASEURL}/api/user?search=${search}`, config)
             setLoading(false);
             setSearchResult(data);
         }
-        catch(err){
+        catch (err) {
             toast({
-                title:"Error occured!",
-                description:err.message,
-                status:"error",
-                isClosable:true,
-                duration:4000,
-                position:'top-left' 
+                title: "Error occured!",
+                description: err.message,
+                status: "error",
+                isClosable: true,
+                duration: 4000,
+                position: 'top-left'
             })
         }
     }
-    const accessChat=async (userId)=>{
-        try{
+    const accessChat = async (userId) => {
+        try {
             setLoadingChat(true);
-            const config={
-                headers:{
+            const config = {
+                headers: {
                     "Content-Type": "application/json",
                     "x-auth-token": user.token
                 }
             }
-            const {data}=await axios.post(`${process.env.REACT_APP_BASEURL}/api/chat`,{userId},config);
-            if(!chats.find(chat=>chat._id === data._id)) setChats([data,...chats])
+            const { data } = await axios.post(`${process.env.REACT_APP_BASEURL}/api/chat`, { userId }, config);
+            if (!chats.find(chat => chat._id === data._id)) setChats([data, ...chats])
             setSelectedChat(data);
             setLoadingChat(false);
             onClose();
         }
-        catch(err){
+        catch (err) {
             toast({
-                title:"Error occured!",
-                description:err.message,
-                status:"error",
-                isClosable:true,
-                duration:4000,
-                position:'top-left' 
+                title: "Error occured!",
+                description: err.message,
+                status: "error",
+                isClosable: true,
+                duration: 4000,
+                position: 'top-left'
             })
         }
     }
@@ -111,14 +112,31 @@ const SideDrawer = () => {
                     </Button>
                 </Tooltip>
 
-                <Text fontSize={{base:"xl",md:"2xl"}} fontFamily='work sans' >Happy-To-Chat</Text>
+                <Text fontSize={{ base: "xl", md: "2xl" }} fontFamily='work sans' >Happy-To-Chat</Text>
 
                 <div>
                     <Menu>
-                        <MenuButton p='1'>
-                            <BellIcon fontSize={{base:'xl',md:'2xl'}} margin='1' />
+                        {
+                            notification.length?<span style={{ color:'red'}}>{notification.length}</span>:""
+                        }
+                        <MenuButton>
+                            
+                            <BellIcon fontSize={{ base: 'xl', md: '2xl' }} />
                         </MenuButton>
-                        {/* <MenuList></MenuList> */}
+                        <MenuList pl={2}>
+                            {!notification.length && "No new messages"}
+                            {notification?.map(ntf => (
+                                <MenuItem key={ntf._id} onClick={()=>{
+                                    setSelectedChat(ntf.chat)
+                                    setNotification(notification.filter(n=>n._id !== ntf._id))
+                                }}>
+                                    {
+                                        ntf.chat.isGroupChat ? `new message in ${ntf.chat.chatName}`
+                                        : `new message from ${getSenderName(user,ntf.chat.users)}`
+                                    }
+                                </MenuItem>
+                            ))}
+                        </MenuList>
                     </Menu>
                     <Menu>
                         <MenuButton as={Button} rightIcon={<ChevronDownIcon />} >
@@ -154,14 +172,14 @@ const SideDrawer = () => {
                             <Button onClick={handleSearch} >Go</Button>
                         </Box>
                         {
-                            loading?(
-                                <ChatLoading/>
-                            ):(
-                                searchResult?.map(user=>(
+                            loading ? (
+                                <ChatLoading />
+                            ) : (
+                                searchResult?.map(user => (
                                     <UserList
                                         key={user._id}
                                         user={user}
-                                        handleFunc={()=>accessChat(user._id)}
+                                        handleFunc={() => accessChat(user._id)}
                                     />
                                 ))
                             )

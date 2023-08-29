@@ -50,7 +50,6 @@ io.on("connection", (socket) => {
     })
     socket.on('join_chat', (room) => {
         socket.join(room);
-        console.log(room);
     })
 
     socket.on("typing", (room, userData) => {
