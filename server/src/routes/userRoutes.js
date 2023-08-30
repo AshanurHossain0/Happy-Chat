@@ -5,7 +5,7 @@ const protectRoute=require("../middleware/auth")
 router.route('/').post(register).get(protectRoute,allUsers);
 router.route('/login').post(authUser);
 router.route('/verify').post(verifyOtp);
-router.route('/user').post(getUser);
+router.route('/user').get(getUser);
 
 
 module.exports=router;
