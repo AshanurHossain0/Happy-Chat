@@ -12,7 +12,7 @@ import io from 'socket.io-client';
 import Lottie from "lottie-react";
 import animationTyping from "../animations/typing.json"
 
-const ENDPOINT=process.env.REACT_APP_BASEURL;
+const ENDPOINT="https://happy-chat.onrender.com";
 var socket,selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
