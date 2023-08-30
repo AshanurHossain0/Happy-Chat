@@ -21,6 +21,16 @@ const userSchema=mongoose.Schema({
         type:String,
         trim:true,
         default:"https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg"
+    },
+    active:{
+        type:Boolean,
+        default:false
+    },
+    otp:{
+        type:Number,
+    },
+    createdAt:{
+        type:Number
     }
 })
 
@@ -28,14 +38,5 @@ userSchema.methods.matchPassword= async function(pass){
     return await bcrypt.compare(pass,this.password);
 }
 
-
-userSchema.pre('save',async function (next){
-    if(! this.isModified){
-        next();
-    }
-
-    const salt=await bcrypt.genSalt(10);
-    this.password=await bcrypt.hash(this.password,salt);
-})
 
 module.exports=mongoose.model("User",userSchema);
