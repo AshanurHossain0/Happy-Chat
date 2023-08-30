@@ -1,4 +1,5 @@
 const asyncHandler = require('express-async-handler')
+const jwt = require('jsonwebtoken')
 const UserModel = require('../models/userModel');
 const generateToken = require('../config/generateToken.js');
 const bcrypt = require('bcryptjs');
@@ -31,7 +32,7 @@ const register = asyncHandler(async (req, res) => {
     const otp = await otpGntr.generate(6, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
 
     userData.otp = otp;
-    userData.createdAt=Date.now();
+    userData.createdAt = Date.now();
     const user = await UserModel.create(userData);
 
     const msgBody = {
@@ -56,7 +57,7 @@ const authUser = asyncHandler(async (req, res) => {
     let { email, password } = req.body;
     email = email.toLowerCase();
 
-    const user = await UserModel.findOne({ email,active:true });
+    const user = await UserModel.findOne({ email, active: true });
 
     if (user && (await user.matchPassword(password))) {
         res.json({
@@ -75,7 +76,7 @@ const authUser = asyncHandler(async (req, res) => {
 const allUsers = asyncHandler(async (req, res) => {
     const searchQuery = req.query.search
         ? {
-            active:true,
+            active: true,
             $or: [
                 { name: { $regex: req.query.search, $options: "i" } },
                 { email: { $regex: req.query.search, $options: "i" } },
@@ -83,14 +84,14 @@ const allUsers = asyncHandler(async (req, res) => {
         }
         : {};
 
-    const users = await UserModel.find(searchQuery).find({ _id: { $ne: req.user._id } }).select({ password: 0, otp: 0, active: 0,createdAt:0 });
+    const users = await UserModel.find(searchQuery).find({ _id: { $ne: req.user._id } }).select({ password: 0, otp: 0, active: 0, createdAt: 0 });
     res.status(200).send(users);
 })
 
 const verifyOtp = asyncHandler(async function (req, res) {
     const { otp, email } = req.body;
     const user = await UserModel.findOne({ email: email, active: false });
-    if (!user){
+    if (!user) {
         res.status(404)
         throw new Error("User not found");
     }
@@ -98,15 +99,33 @@ const verifyOtp = asyncHandler(async function (req, res) {
         res.status(400);
         throw new Error("Invalid OTP");
     }
-    if ((Date.now() - user.createdAt) > (1000 * 180)){
+    if ((Date.now() - user.createdAt) > (1000 * 180)) {
         res.status(400);
         throw new Error("Time up, resend otp");
     }
     await UserModel.findOneAndUpdate({ email }, { active: true, createdAt: Date.now() });
-      res.sendStatus(200);
+    res.sendStatus(200);
+}
+)
+const getUser = asyncHandler(async function (req, res) {
+    const token = req.headers['x-auth-token']
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    try {
+        const user = await UserModel.findById(decoded.id).select("-password");
+        if (!user) {
+            res.status(404);
+            throw new Error("noUser");
+        }
+        res.status(200);
+        res.json(user)
     }
+    catch(err){
+        throw new Error(err.message);
+    }
+}
 )
 
 
 
-module.exports = { register, authUser, allUsers, verifyOtp };
+module.exports = { register, authUser, allUsers, verifyOtp,getUser};
