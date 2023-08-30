@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
-import axios from "axios";
+
 
 const ChatContext=createContext();
 
@@ -12,30 +12,11 @@ const ChatProvider=({children})=>{
 
     const history=useHistory();
 
-    const getUser= async (token)=>{
-        try{
-            const config = {
-                headers: {
-                    "Content-type": "application/json",
-                    "x-auth-token": token
-                },
-            };
-
-            const { data } = await axios.post(
-                `${process.env.REACT_APP_BASEURL}/api/user/user`,config
-            );
-            localStorage.setItem('userInfo',JSON.stringify(data));
-            setUser(data);
-        }
-        catch(err){
-            localStorage.removeItem('userInfo');
-            history.push("/")
-        }
-    }
+    
 
     useEffect(()=>{
         const userInfo=JSON.parse(localStorage.getItem('userInfo'));
-        getUser(userInfo.token);
+        setUser(userInfo);
         
     },[history])
     return (
