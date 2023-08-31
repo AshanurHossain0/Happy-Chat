@@ -1,9 +1,9 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import "./styles.css";
 import { ChatState } from '../context/chatProvider'
-import { Box, Text, IconButton, Spinner, FormControl, Input, useToast } from '@chakra-ui/react';
-import { ArrowBackIcon } from '@chakra-ui/icons';
+import { Box, Text, IconButton, Spinner, FormControl, Input, useToast, Button } from '@chakra-ui/react';
+import { ArrowBackIcon, ArrowRightIcon } from '@chakra-ui/icons';
 import { getSenderName, getSender } from '../config/chatLogic';
 import ProfileModal from './mixed/ProfileModal';
 import UpdateGroupModal from './mixed/UpdateGroupModal';
@@ -12,14 +12,14 @@ import io from 'socket.io-client';
 import Lottie from "lottie-react";
 import animationTyping from "../animations/typing.json"
 
-const ENDPOINT=process.env.REACT_APP_BASEURL;
-var socket,selectedChatCompare;
+const ENDPOINT = process.env.REACT_APP_BASEURL;
+var socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
     const toast = useToast();
 
-    const { user, selectedChat, setSelectedChat,notification,setNotification } = ChatState();
+    const { user, selectedChat, setSelectedChat, notification, setNotification } = ChatState();
 
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
@@ -42,7 +42,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             const { data } = await axios.get(`${process.env.REACT_APP_BASEURL}/api/message/${selectedChat._id}`, config);
             setMessages(data);
             setLoading(false);
-            socket.emit('join_chat',selectedChat._id);
+            socket.emit('join_chat', selectedChat._id);
 
         } catch (err) {
             toast({
@@ -58,8 +58,8 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     };
 
     const sendMessage = async (e) => {
-        if (e.key === "Enter" && newMessage) {
-            socket.emit('stop_typing',selectedChat._id)
+        if (newMessage) {
+            socket.emit('stop_typing', selectedChat._id)
             try {
                 const config = {
                     headers: {
@@ -73,7 +73,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 }, config);
                 setNewMessage('');
                 setMessages([...messages, data])
-                socket.emit('new_message',data)
+                socket.emit('new_message', data)
             }
             catch (err) {
                 toast({
@@ -88,50 +88,50 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         }
     }
 
-    useEffect(()=>{
-        socket=io(ENDPOINT);
-        socket.emit('setup',user);
-        socket.on("connected",()=>setSocketConnected(true));
-        socket.on('typing',(userData)=>{
-            if(userData._id !== user._id) setIsTyping(true);
+    useEffect(() => {
+        socket = io(ENDPOINT);
+        socket.emit('setup', user);
+        socket.on("connected", () => setSocketConnected(true));
+        socket.on('typing', (userData) => {
+            if (userData._id !== user._id) setIsTyping(true);
         });
-        socket.on('stop_typing',()=>setIsTyping(false));
-    },[])
+        socket.on('stop_typing', () => setIsTyping(false));
+    }, [])
 
     const typingHandler = (e) => {
         setNewMessage(e.target.value)
-        if(!socketConnected) return;
-        if(!typing){
+        if (!socketConnected) return;
+        if (!typing) {
             setTyping(true);
-            socket.emit('typing',selectedChat._id,user);
+            socket.emit('typing', selectedChat._id, user);
         }
-        let lastTypingTime=new Date().getTime();
-        var timerLength=3000;
-        setTimeout(()=>{
-            var timenow=new Date().getTime();
-            var timeDiff=timenow-lastTypingTime;
-            if(timeDiff>=timerLength && typing){
-                socket.emit('stop_typing',selectedChat._id);
+        let lastTypingTime = new Date().getTime();
+        var timerLength = 3000;
+        setTimeout(() => {
+            var timenow = new Date().getTime();
+            var timeDiff = timenow - lastTypingTime;
+            if (timeDiff >= timerLength && typing) {
+                socket.emit('stop_typing', selectedChat._id);
                 setTyping(false);
             }
-        },timerLength)
+        }, timerLength)
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         fetchMessages();
-        selectedChatCompare=selectedChat;
-    },[selectedChat])
+        selectedChatCompare = selectedChat;
+    }, [selectedChat])
 
-    useEffect(()=>{
-        socket.on('message_received',(newMessage)=>{
-            if(!selectedChatCompare || selectedChatCompare._id !== newMessage.chat._id){
-                if(!notification.includes(newMessage)){
-                    setNotification([newMessage,...notification]);
+    useEffect(() => {
+        socket.on('message_received', (newMessage) => {
+            if (!selectedChatCompare || selectedChatCompare._id !== newMessage.chat._id) {
+                if (!notification.includes(newMessage)) {
+                    setNotification([newMessage, ...notification]);
                     setFetchAgain(!fetchAgain);
                 }
             }
-            else{
-                setMessages([...messages,newMessage])
+            else {
+                setMessages([...messages, newMessage])
             }
         })
     })
@@ -186,27 +186,33 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                                     <Spinner size='xl' w='20' h='20' alignSelf='center' margin='auto' />
                                 ) : (
                                     <div className='messages'>
-                                        <ScrollableChat messages={messages} />
+                                        {messages.length > 0 && <ScrollableChat messages={messages} />}
                                     </div>
                                 )
                             }
-                            <FormControl onKeyDown={sendMessage} isRequired mt='3'>
+                            <FormControl isRequired mt='3'>
                                 {
-                                    isTyping?<div style={{width:'60px'}}>
+                                    isTyping ? <div style={{ width: '60px' }}>
                                         <Lottie
-                                        width={45}
-                                         style={{marginBottom:'15',marginLeft:'0'}}
-                                            animationData={animationTyping} 
-                                         />
-                                    </div>:<div style={{width:'60px'}}>{' '}</div>
+                                            width={45}
+                                            style={{ marginBottom: '15', marginLeft: '0' }}
+                                            animationData={animationTyping}
+                                        />
+                                    </div> : <div style={{ width: '60px' }}>{' '}</div>
                                 }
-                                <Input
-                                    variant='filled'
-                                    bg='#E0E0E0'
-                                    placeholder='Enter a message...'
-                                    onChange={typingHandler}
-                                    value={newMessage}
-                                />
+                                <Box display='flex'>
+                                    <Input
+                                        w='94%'
+                                        variant='filled'
+                                        bg='#E0E0E0'
+                                        placeholder='Enter a message...'
+                                        onChange={typingHandler}
+                                        value={newMessage}
+                                    />
+                                    <Button w='4%' mx='1%' onClick={sendMessage}>
+                                        <ArrowRightIcon/>
+                                    </Button>
+                                </Box>
                             </FormControl>
                         </Box>
                     </>
